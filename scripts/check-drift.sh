@@ -2,16 +2,28 @@
 set -euo pipefail
 
 PIN_FILE="$HOME/TWGT-/.twgt/adr-registry-pin.json"
-EXPECTED_BRIDGE_SHA=$(jq -r '.bridge_sha' "$PIN_FILE")
-ACTUAL_BRIDGE_SHA=$(cd "$HOME/twgt-bridge" && git rev-parse HEAD)
+REGISTRY_DIR="$HOME/engineering-intelligence"
 
-echo "Expected Bridge SHA: $EXPECTED_BRIDGE_SHA"
-echo "Actual Bridge SHA:   $ACTUAL_BRIDGE_SHA"
+EXPECTED_SHA=$(jq -r '.bridge_sha' "$PIN_FILE")
+EXPECTED_HASH=$(jq -r '.registry_sha256' "$PIN_FILE")
+REGISTRY_PATH=$(jq -r '.path' "$PIN_FILE")
 
-if [ "$EXPECTED_BRIDGE_SHA" != "$ACTUAL_BRIDGE_SHA" ]; then
-  echo -e "\033[31m[FAIL] SHA DRIFT DETECTED. HITL cannot admit this state.\033[0m"
-  echo "Action: Update the pin file or checkout the correct bridge commit."
+ACTUAL_SHA=$(cd "$REGISTRY_DIR" && git rev-parse HEAD)
+ACTUAL_HASH=$(sha256sum "$REGISTRY_DIR/$REGISTRY_PATH" | awk '{print $1}')
+
+echo "Expected SHA:  $EXPECTED_SHA"
+echo "Actual SHA:    $ACTUAL_SHA"
+echo "Expected Hash: $EXPECTED_HASH"
+echo "Actual Hash:   $ACTUAL_HASH"
+
+if [ "$EXPECTED_SHA" != "$ACTUAL_SHA" ]; then
+  echo -e "\033[31m[FAIL] SHA DRIFT DETECTED. Registry commit does not match pin.\033[0m"
   exit 1
-else
-  echo -e "\033[32m[ OK ] Bridge SHA matches the pin.\033[0m"
 fi
+
+if [ "$EXPECTED_HASH" != "$ACTUAL_HASH" ]; then
+  echo -e "\033[31m[FAIL] HASH DRIFT DETECTED. Registry contents do not match pin.\033[0m"
+  exit 1
+fi
+
+echo -e "\033[32m[ OK ] Registry SHA and Hash match the pin perfectly.\033[0m"
