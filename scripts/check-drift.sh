@@ -27,3 +27,13 @@ if [ "$EXPECTED_HASH" != "$ACTUAL_HASH" ]; then
 fi
 
 echo -e "\033[32m[ OK ] Registry SHA and Hash match the pin perfectly.\033[0m"
+
+# --- Schema Gate Validation ---
+echo "Running Schema Gate validation..."
+cd "$HOME/twgt-schema-gate/contract-tests" && node run-ts.mjs > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+  echo -e "\033[32m[ OK ] Schema Gate passed (22/22).\033[0m"
+else
+  echo -e "\033[31m[FAIL] Schema Gate failed.\033[0m"
+  exit 1
+fi
