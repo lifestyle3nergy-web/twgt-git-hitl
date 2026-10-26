@@ -8,3 +8,7 @@ Human-facing only. Holds the traffic-light PR template, review labels, CODEOWNER
 ## Local Execution
 Run the drift check before creating any PR:
 ./scripts/check-drift.sh
+
+## 📚 Documentation
+- [Operator's Manual](./docs/operator-manual.md)
+- [Dashboard Integration Architecture](./docs/dashboard-integration.md)
